@@ -11,25 +11,33 @@ style = color_style()
 
 
 class ConfigIniMixin:
-    """Set AppConfig attributes via a text/ini configuration file."""
+    """Set AppConfig attributes via a text/ini configuration file.
+    """
 
     config_filename = 'config.ini'
+    config_subfolder_name = None  # subfolder in etc for this project
     config_ini_attrs = {}
     _config_folder = None
 
     def overwrite_config_ini_attrs_on_class(self, section=None):
         """Read config file and overwrite attributes on the class."""
         config = configparser.ConfigParser()
-        config_ini_attrs = {section: self.config_ini_attrs[section]} if section else self.config_ini_attrs
+        config_ini_attrs = {
+            section:
+            self.config_ini_attrs[section]} if section else self.config_ini_attrs
         sys.stdout.write(
-            ' * reading configuration from \'{}\'.\n'.format(self.config_filename))
+            ' * reading configuration from \'{}\'.\n'.format(
+                self.config_filename))
         config.read(os.path.join(self.config_folder, self.config_filename))
         for section, attrs in config_ini_attrs.items():
             if section not in config.sections():
                 self.write_default_config(section)
-                config.read(os.path.join(self.config_folder, self.config_filename))
+                config.read(
+                    os.path.join(self.config_folder, self.config_filename))
             sys.stdout.write(
-                ' * updating {}.AppConfig attributes {}.\n'.format(section, ', '.join([self.convert_attr(attr)[0] for attr in attrs])))
+                ' * updating {}.AppConfig attributes {}.\n'.format(
+                    section,
+                    ', '.join([self.convert_attr(attr)[0] for attr in attrs])))
             for attr in attrs:
                 attr, value = self.to_python(attr, section, config)
                 setattr(self, attr, value or None)
@@ -42,7 +50,9 @@ class ConfigIniMixin:
         return attr, datatype
 
     def to_python(self, attr, section, config):
-        """Return attr, value where value is converted back to a python object."""
+        """Return attr, value where value is converted back to
+        a python object.
+        """
         attr, datatype = self.convert_attr(attr)
         if datatype in (list, tuple):
             value = config[section][attr]
@@ -55,7 +65,9 @@ class ConfigIniMixin:
         return attr, value
 
     def get_prep_value(self, attr, section, config):
-        """Return attr, value where value is prepared for the write to file."""
+        """Return attr, value where value is prepared for the write
+        to file.
+        """
         attr, datatype = self.convert_attr(attr)
         try:
             value = getattr(self, attr)
@@ -68,7 +80,9 @@ class ConfigIniMixin:
         return attr, value
 
     def write_default_config(self, section):
-        """Write the config file with default values and return the config instance."""
+        """Write the config file with default values and return the config
+        instance.
+        """
         config = configparser.ConfigParser()
         values = {}
         for attr in self.config_ini_attrs[section]:
@@ -92,7 +106,8 @@ class ConfigIniMixin:
             try:
                 self._config_folder = settings.ETC_DIR
             except AttributeError:
-                self._config_folder = os.path.join(settings.BASE_DIR, 'etc')
+                self._config_folder = os.path.join(
+                    settings.BASE_DIR, 'etc', self.config_subfolder_name)
                 sys.stdout.write(style.NOTICE(
                     ' Warning: missing settings.ETC_DIR, using default configuration folder '
                     '\'{}\'\n'.format(self._config_folder)))
