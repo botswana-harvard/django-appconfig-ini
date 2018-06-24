@@ -104,7 +104,7 @@ class ConfigIniMixin:
         """Return the projects ETC folder."""
         if not self._config_folder:
             try:
-                self._config_folder = settings.ETC_DIR
+                self._config_folder = os.path.join(settings.ETC_DIR, settings.APP_NAME)
             except AttributeError:
                 self._config_folder = os.path.join(
                     settings.BASE_DIR, 'etc', self.config_subfolder_name)
